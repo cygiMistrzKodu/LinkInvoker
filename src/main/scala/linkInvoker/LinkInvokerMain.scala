@@ -23,20 +23,6 @@ import javafx.beans.value.ChangeListener
 import scalafx.beans.value.ObservableValue
 
 object LinkInvokerMain extends JFXApp {
-  //      def  main(args: Array[String]): Unit = {
-
-  //      val linkCreator = new LinkCreator("mr Robot",1,4, 1, 10)
-  //      val links = linkCreator.getLinks
-
-  //     Gui.main(Array())
-
-  //    a.main(args: _ *)
-
-  //    new LinkSender(links)
-
-  //      for (link <- links) println(link)
-
-  //    }
 
   stage = new PrimaryStage() {
 
@@ -50,19 +36,49 @@ object LinkInvokerMain extends JFXApp {
       val fromSeasonLabel = new Label("From: ") {
         font = Font.font(15)
       }
-      val beginSeasonNumberInput = new TextField {
+      val beginSeasonNumberInput: TextField = new TextField {
         text = deafultNumber
         prefWidth = getInputPrefSize
         alignment = textAligment
+
+        text.onChange {
+          (o: ObservableValue[_ <: String, _ <: String], oldVal: String, newVal: String) =>
+
+            allowOnlyNumbersAndChangeFirstDigitZeroToOne(this, oldVal, newVal)
+
+        }
+
+        focused.addListener((o, oldVal, newVal) => {
+
+          changeToDefultValueIfEmpty(this)
+          text = ifRangeIncorrectFix(text.get, endSeasonNumberInput.getText)
+
+        })
       }
 
       val toSeasonLabel = new Label("To: ") {
         font = Font.font(15)
       }
-      val endSeasonNumberInput = new TextField {
+      val endSeasonNumberInput: TextField = new TextField {
         text = deafultNumber
         prefWidth = getInputPrefSize
         alignment = textAligment
+
+        text.onChange {
+          (o: ObservableValue[_ <: String, _ <: String], oldVal: String, newVal: String) =>
+
+            allowOnlyNumbersAndChangeFirstDigitZeroToOne(this, oldVal, newVal)
+
+        }
+
+        focused.addListener((o, oldVal, newVal) => {
+
+          changeToDefultValueIfEmpty(this)
+
+          beginSeasonNumberInput.setText(ifRangeIncorrectFix(text.get, beginSeasonNumberInput.getText))
+
+        })
+
       }
 
       children = Seq(fromSeasonLabel, beginSeasonNumberInput, toSeasonLabel, endSeasonNumberInput)
@@ -94,53 +110,43 @@ object LinkInvokerMain extends JFXApp {
         prefWidth = getInputPrefSize
         alignment = textAligment
         text.onChange {
-          
-          (o: ObservableValue[_ <: String , _ <: String], oldVal: String, newVal: String) => {  //First Solution to Handel WIRD THING With Parameters
-            
-             println("Mamusika")
-             
-              println("new value:" + newVal)
-        
-               println("old value:" + oldVal)
-            
-          }
-           
-//          def dupa(ab: ObservableValue[String, String], a: String, b: String): Unit = {
-//            println("DUpa DUp Dupa dupa")
-//
-//          }
+          (o: ObservableValue[_ <: String, _ <: String], oldVal: String, newVal: String) =>
 
-          //          if (text.get.isEmpty()){
-          //             text = deafultNumber
-          //          }
-          
-           
-          
-//           println("lala")
+            allowOnlyNumbersAndChangeFirstDigitZeroToOne(this, oldVal, newVal)
 
         }
 
+        focused.addListener((o, oldVal, newVal) => {
+
+          changeToDefultValueIfEmpty(this)
+          text = ifRangeIncorrectFix(text.get, endEpisodeNumberInput.getText)
+
+        })
+
       }
-      
-      
-      beginEpisodeNumberInput.textProperty().addListener((observable,oldValue,newValue) => { // Second Solution to Handel Event WIth Parameters
-        
-//        println("new value:" + oldValue)
-//        
-//        println("old value:" + newValue)
-        
-      })
-      
-      
-      
 
       val toEpisodeLabel = new Label("To: ") {
         font = Font.font(15)
       }
-      val endEpisodeNumberInput = new TextField {
+      val endEpisodeNumberInput: TextField = new TextField {
         text = deafultNumber
         prefWidth = getInputPrefSize
         alignment = textAligment
+
+        text.onChange {
+          (o: ObservableValue[_ <: String, _ <: String], oldVal: String, newVal: String) =>
+
+            allowOnlyNumbersAndChangeFirstDigitZeroToOne(this, oldVal, newVal)
+
+        }
+
+        focused.addListener((o, oldVal, newVal) => {
+
+          changeToDefultValueIfEmpty(this)
+          beginEpisodeNumberInput.setText(ifRangeIncorrectFix(text.get, beginEpisodeNumberInput.getText))
+
+        })
+
       }
 
       val seasonName = new Label("Seasons choose")
@@ -179,6 +185,24 @@ object LinkInvokerMain extends JFXApp {
         prefWidth = 100
         prefHeight = 50
         font = Font.font(20)
+
+        onAction = (event: ActionEvent) => {
+
+          val movieName = movieNameInput.getText
+          val seasonStart = seasonRangeChooserHbox.beginSeasonNumberInput.getText.toInt
+          val seasonEnd = seasonRangeChooserHbox.endSeasonNumberInput.getText.toInt
+          val episodeStart = episodeRangeChooserHbox.beginEpisodeNumberInput.getText.toInt
+          val episodeEnd = episodeRangeChooserHbox.endEpisodeNumberInput.getText.toInt
+
+          if (!movieName.isEmpty()) {
+
+            val linkCreator = new LinkCreator(movieName, seasonStart, seasonEnd, episodeStart, episodeEnd)
+            val links = linkCreator.getLinks
+            new LinkSender(links)
+          }
+
+        }
+
       }
 
       children = Seq(serialNameLabel, movieNameInput, seasonChooser, episdoeChooser, sendRequestButton)
@@ -198,15 +222,37 @@ object LinkInvokerMain extends JFXApp {
 
   }
 
-  def getInputPrefSize: Double = 120
+  private def getInputPrefSize: Double = 120
 
-  def textAligment: Pos = Pos.CENTER
+  private def textAligment: Pos = Pos.CENTER
 
-  def deafultNumber: String = "1"
+  private def deafultNumber: String = "1"
 
-//  def dupa(ab: ObservableValue[String, String], a: String, b: String): Unit = {
-//    println("DUpa DUp Dupa dupa")
-//
-//  }
+  private def allowOnlyNumbersAndChangeFirstDigitZeroToOne(textField: TextField, oldVal: String, newVal: String): Unit = {
+
+    if (!newVal.matches("\\d*")) {
+
+      textField.setText(newVal.replaceAll("[^\\d]", ""));
+    }
+
+    if (newVal.matches("0")) {
+
+      textField.setText(deafultNumber);
+
+    }
+
+  }
+
+  private def changeToDefultValueIfEmpty(tF: TextField) = if (tF.getText.isEmpty()) tF.setText(deafultNumber)
+
+  private def ifRangeIncorrectFix(firstNumber: String, secondNumber: String): String = {
+
+    if (secondNumber.isEmpty()) return firstNumber
+
+    if (firstNumber.isEmpty() || secondNumber.isEmpty()) return ""
+
+    if (firstNumber.toInt > secondNumber.toInt) secondNumber else firstNumber
+
+  }
 
 }

@@ -82,7 +82,7 @@
 						<manifest>
 							<classpathPrefix>lib/</classpathPrefix>
 							<addClasspath>true</addClasspath>
-							<mainClass>linkInvokerStart.App</mainClass>
+							<mainClass>linkInvoker.LinkInvokerMain</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
