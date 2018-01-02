@@ -45,6 +45,7 @@ object LinkInvokerMain extends JFXApp {
           (o: ObservableValue[_ <: String, _ <: String], oldVal: String, newVal: String) =>
 
             allowOnlyNumbersAndChangeFirstDigitZeroToOne(this, oldVal, newVal)
+            endSeasonNumberInput.setText(ifBeginRangeHigerChangeEndRangeToHiger(text.get, endSeasonNumberInput.getText))
 
         }
 
@@ -105,7 +106,7 @@ object LinkInvokerMain extends JFXApp {
       val fromEpisodeLabel = new Label("From: ") {
         font = Font.font(15)
       }
-      val beginEpisodeNumberInput = new TextField {
+      val beginEpisodeNumberInput : TextField = new TextField {
         text = deafultNumber
         prefWidth = getInputPrefSize
         alignment = textAligment
@@ -113,6 +114,7 @@ object LinkInvokerMain extends JFXApp {
           (o: ObservableValue[_ <: String, _ <: String], oldVal: String, newVal: String) =>
 
             allowOnlyNumbersAndChangeFirstDigitZeroToOne(this, oldVal, newVal)
+            endEpisodeNumberInput.setText(ifBeginRangeHigerChangeEndRangeToHiger(text.get, endEpisodeNumberInput.getText))
 
         }
 
@@ -252,6 +254,14 @@ object LinkInvokerMain extends JFXApp {
     if (firstNumber.isEmpty() || secondNumber.isEmpty()) return ""
 
     if (firstNumber.toInt > secondNumber.toInt) secondNumber else firstNumber
+
+  }
+
+  private def ifBeginRangeHigerChangeEndRangeToHiger(beginRange: String, endRange: String): String = {
+
+    if (beginRange.isEmpty()) return endRange
+
+    if (beginRange.toInt > endRange.toInt) beginRange else endRange
 
   }
 
