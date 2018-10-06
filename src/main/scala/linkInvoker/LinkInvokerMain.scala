@@ -106,7 +106,7 @@ object LinkInvokerMain extends JFXApp {
       val fromEpisodeLabel = new Label("From: ") {
         font = Font.font(15)
       }
-      val beginEpisodeNumberInput : TextField = new TextField {
+      val beginEpisodeNumberInput: TextField = new TextField {
         text = deafultNumber
         prefWidth = getInputPrefSize
         alignment = textAligment
@@ -162,14 +162,14 @@ object LinkInvokerMain extends JFXApp {
       spacing = 6
       alignment = Pos.Center
 
-      val episdoeName = new Label("Episode choose") {
+      val episodeName = new Label("Episode choose") {
         font = Font.font(18)
       }
 
-      children = Seq(episdoeName, episodeRangeChooserHbox)
+      children = Seq(episodeName, episodeRangeChooserHbox)
     }
 
-    val rangeChooser = new VBox {
+    val serialChooser = new VBox {
 
       spacing = 6
       alignment = Pos.Center
@@ -216,12 +216,48 @@ object LinkInvokerMain extends JFXApp {
 
       root = new StackPane {
 
-        children = Seq(rangeChooser)
+        children = Seq(serialChooser)
 
       }
 
+      onCloseRequest_=(v => {
+
+        val userEntryCollector = new UserEntryCollector;
+        userEntryCollector.movieName = serialChooser.movieNameInput.getText
+        userEntryCollector.seasonStart = seasonRangeChooserHbox.beginSeasonNumberInput.getText
+        userEntryCollector.seasonEnd = seasonRangeChooserHbox.endSeasonNumberInput.getText
+        userEntryCollector.episodeStart = episodeRangeChooserHbox.beginEpisodeNumberInput.getText
+        userEntryCollector.episodeEnd = episodeRangeChooserHbox.endEpisodeNumberInput.getText
+
+        val lastUserEntryManager = new LastUserEntryManager();
+        lastUserEntryManager.saveEntry(userEntryCollector)
+
+        System.out.println("movieName: " + userEntryCollector.movieName)
+        System.out.println("seasonStart: " + userEntryCollector.seasonStart)
+        System.out.println("seasonEnd: " + userEntryCollector.seasonEnd)
+        System.out.println("episodeStart: " + userEntryCollector.episodeStart)
+        System.out.println("episodeEnd: " + userEntryCollector.episodeEnd)
+
+      })
+
+      onShowing_=(v => {
+
+        System.out.println("Pokazuje Forme uruchamiam teraz******  Tutaj wczytam plik z user Entry ostatnim")
+
+        val lastUserEntryManager = new LastUserEntryManager();
+        val lastUserEntry = lastUserEntryManager.getLastUserEntry();
+
+        serialChooser.movieNameInput.setText(lastUserEntry.movieName)
+        seasonRangeChooserHbox.beginSeasonNumberInput.setText(lastUserEntry.seasonStart)
+        seasonRangeChooserHbox.endSeasonNumberInput.setText(lastUserEntry.seasonEnd)
+        episodeRangeChooserHbox.beginEpisodeNumberInput.setText(lastUserEntry.episodeStart)
+        episodeRangeChooserHbox.endEpisodeNumberInput.setText(lastUserEntry.episodeEnd) 
+
+      })
+
     }
 
+   
   }
 
   private def getInputPrefSize: Double = 120
